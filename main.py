@@ -44,7 +44,7 @@ clock = pygame.time.Clock()
 
 # images
 cheese_image = pygame.image.load(r'images/queso.png').convert_alpha()
-cheese_image = pygame.transform.scale(cheese_image,(TILE - 2, TILE-2))
+cheese_image = pygame.transform.scale(cheese_image,(TILE  *1.2, TILE*1.2))
 #bg = pygame.image.load('img/bg_main.jpg').convert()
 
 # get maze
@@ -58,7 +58,7 @@ player_img = pygame.transform.scale(player_img, ((TILE ) - 8 , TILE -8))
 player_rect = player_img.get_rect()
 player_rect.center = TILE // 2, TILE // 2
 directions = {'a': (-player_speed, 0), 'd': (player_speed, 0), 'w': (0, -player_speed), 's': (0, player_speed)}
-directions_actor = {'a': 90, 'd': -90, 'w': 0, 's': 180}
+player_angles = {'a': 90, 'd': -90, 'w': 0, 's': 180}
 keys = {'a': pygame.K_LEFT, 'd': pygame.K_RIGHT, 'w': pygame.K_UP, 's': pygame.K_DOWN}
 direction = (0, 0)
 
@@ -72,7 +72,7 @@ pygame.time.set_timer(pygame.USEREVENT, 1000)
 score = 0
 game_angle = 0
 player_angle = 0
-ROTATION_TIMER_SEC = 10
+ROTATION_TIMER_SEC = 15
 last_rotation = pygame.time.get_ticks()
 
 # fonts
@@ -94,10 +94,8 @@ while True:
     pressed_key = pygame.key.get_pressed()
     for key, key_value in keys.items():
         if pressed_key[key_value] and not is_collide(*directions[key]):
-            print(f'press: - time: {pygame.time.get_ticks() - last_key}')
             direction = directions[key]
-            player_angle = directions_actor[key]
-            print(f"ok: {direction},  {key_value} ")
+            player_angle = player_angles[key]
             player_rect.move_ip(direction)   
             break
             
@@ -122,15 +120,17 @@ while True:
 
     # draw player
     rotated_player = pygame.transform.rotate(player_img,player_angle)
+    pygame.draw.rect(game_surface,'black',(0,0,TILE-8,TILE))
     game_surface.blit(rotated_player, player_rect)
-    game_surface.blit(cheese_image,(game_surface.get_width()-6-TILE, game_surface.get_height()-6-TILE))
+    game_surface.blit(cheese_image,(game_surface.get_width()-cheese_image.get_width() - 10,
+                                     game_surface.get_height()-cheese_image.get_height()- 10))
     rotated_surface = pygame.transform.rotate(game_surface,game_angle)
     surface.blit(rotated_surface, (2, 2))
 
 
      # draw stats
     surface.blit(text_font.render('TIME', True, pygame.Color('cyan'), True), (WIDTH + 70, 30))
-    surface.blit(font.render(f'{(pygame.time.get_ticks() - last_rotation)//1000}', True, pygame.Color('cyan')), (WIDTH + 70, 130))
+    surface.blit(font.render(f'{ROTATION_TIMER_SEC-(pygame.time.get_ticks() - last_rotation)//1000}', True, pygame.Color('cyan')), (WIDTH + 70, 130))
 
     pygame.display.flip()
     clock.tick(FPS)
