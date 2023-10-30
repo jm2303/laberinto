@@ -22,21 +22,6 @@ def is_game_over():
     #    time, score, FPS = 60, 0, 60
 
 
-def get_record():
-    try:
-        with open('record') as f:
-            return f.readline()
-    except FileNotFoundError:
-        with open('record', 'w') as f:
-            f.write('0')
-            return 0
-
-
-def set_record(record, score):
-    rec = max(int(record), score)
-    with open('record', 'w') as f:
-        f.write(str(rec))
-
 
 FPS = 60
 pygame.init()
@@ -49,7 +34,7 @@ cheese_image = pygame.image.load(r'images/queso.png').convert_alpha()
 cheese_image = pygame.transform.scale(cheese_image,(TILE  *1.2, TILE*1.2))
 
 #UI elements
-manager = pygame_gui.UIManager((1600, 900))
+manager = pygame_gui.UIManager((WIDTH+300, HEIGHT))
 
 # get maze
 maze = generate_maze()
@@ -71,7 +56,7 @@ game_starting_time = pygame.time.get_ticks()
 # collision list
 walls_collide_list = sum([cell.get_rects() for cell in maze], [])
 
-# timer, score, record
+# timer
 pygame.time.set_timer(pygame.USEREVENT, 1000)
 score = 0
 game_angle = 0
@@ -84,11 +69,26 @@ font = pygame.font.SysFont('Impact', 150)
 text_font = pygame.font.SysFont('Impact', 60)
 small_font = pygame.font.SysFont('Impact', 30)
 
+def new_game():
+    global maze
+    global game_starting_time
+    global last_rotation
+    global walls_collide_list
+    maze = generate_maze()
+    player_rect.center = TILE // 2, TILE // 2
+    game_starting_time = pygame.time.get_ticks()
+    last_rotation = pygame.time.get_ticks()
+    walls_collide_list = sum([cell.get_rects() for cell in maze], [])
+
+#GUI elements
 UI_REFRESH_RATE = clock.tick(60)/1000
 slider_input  = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((WIDTH + 50, 330),(200, 50)),
                                                      start_value=15,value_range=(15,40),
                                                      manager=manager,
                                                     object_id='-ROTATION_SLIDER-')
+button_new = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((WIDTH + 50, 530),(200, 50)),text="Nuevo",
+                                                    manager=manager,
+                                                    object_id='-NEW-')
 
 while True:
     #surface.blit(bg, (WIDTH, 0))
@@ -99,10 +99,13 @@ while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             exit()
-    if (event.type == pygame_gui.UI_HORIZONTAL_SLIDER_MOVED and
-                event.ui_object_id == '-ROTATION_SLIDER-'):
-                ROTATION_TIMER_SEC = int(slider_input.current_value)
-            
+        if (event.type == pygame_gui.UI_HORIZONTAL_SLIDER_MOVED and
+                    event.ui_object_id == '-ROTATION_SLIDER-'):
+                    ROTATION_TIMER_SEC = int(slider_input.current_value)
+        if event.type == pygame_gui.UI_BUTTON_PRESSED:
+            #and                event.ui_object_id == '-NEW-'):
+                    new_game()     
+
     manager.process_events(event)
         
     manager.update(UI_REFRESH_RATE)
@@ -119,9 +122,7 @@ while True:
    # if not is_collide(*direction):
    #     player_rect.move_ip(direction)
     if pressed_key[pygame.K_n]:
-        maze = generate_maze()
-        player_rect.center = TILE // 2, TILE // 2
-        game_starting_time = pygame.time.get_ticks()
+        new_game()
     
     if pygame.time.get_ticks() - last_rotation > ROTATION_TIMER_SEC * 1000:
         game_angle = game_angle  +90
