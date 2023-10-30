@@ -1,7 +1,8 @@
 from maze_generator import *
-import logging
+import pygame_gui
 
-logging.debug('Inicio de modulo')
+
+
 
 def is_collide(x, y):
     tmp_rect = player_rect.move(x, y)
@@ -45,7 +46,9 @@ clock = pygame.time.Clock()
 # images
 cheese_image = pygame.image.load(r'images/queso.png').convert_alpha()
 cheese_image = pygame.transform.scale(cheese_image,(TILE  *1.2, TILE*1.2))
-#bg = pygame.image.load('img/bg_main.jpg').convert()
+
+#UI elements
+manager = pygame_gui.UIManager((1600, 900))
 
 # get maze
 maze = generate_maze()
@@ -79,6 +82,12 @@ last_rotation = pygame.time.get_ticks()
 font = pygame.font.SysFont('Impact', 150)
 text_font = pygame.font.SysFont('Impact', 80)
 
+UI_REFRESH_RATE = clock.tick(60)/1000
+slider_input  = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((WIDTH + 70, 330),(200, 50)),
+                                                     start_value=10,value_range=(10,40),
+                                                     manager=manager,
+                                                    object_id='#main_text_entry')
+
 while True:
     #surface.blit(bg, (WIDTH, 0))
     #game_surface.fill('black')
@@ -88,7 +97,13 @@ while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             exit()
-
+    if (event.type == pygame_gui.UI_HORIZONTAL_SLIDER_MOVED and
+                event.ui_object_id == '#main_text_entry'):
+                print( slider_input.current_value)
+            
+    manager.process_events(event)
+        
+    manager.update(UI_REFRESH_RATE)
 
     # controls and movement
     pressed_key = pygame.key.get_pressed()
@@ -130,11 +145,14 @@ while True:
 
      # draw stats
     surface.blit(text_font.render('TIME', True, pygame.Color('cyan'), True), (WIDTH + 70, 30))
-    surface.blit(font.render(f'{ROTATION_TIMER_SEC-(pygame.time.get_ticks() - last_rotation)//1000}', True, pygame.Color('cyan')), (WIDTH + 70, 130))
+    surface.blit(font.render(f'{(pygame.time.get_ticks() - last_rotation)//1000}', True, pygame.Color('cyan')), (WIDTH + 70, 130))
+    manager.draw_ui(surface)
+
+
 
     pygame.display.flip()
     clock.tick(FPS)
-
+    
 
 
    
