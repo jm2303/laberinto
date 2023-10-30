@@ -1,5 +1,6 @@
 from maze_generator import *
 import pygame_gui
+from datetime import timedelta
 
 
 
@@ -64,7 +65,7 @@ directions = {'a': (-player_speed, 0), 'd': (player_speed, 0), 'w': (0, -player_
 player_angles = {'a': 90, 'd': -90, 'w': 0, 's': 180}
 keys = {'a': pygame.K_LEFT, 'd': pygame.K_RIGHT, 'w': pygame.K_UP, 's': pygame.K_DOWN}
 direction = (0, 0)
-
+game_starting_time = pygame.time.get_ticks()
 # food settings
 
 # collision list
@@ -80,13 +81,14 @@ last_rotation = pygame.time.get_ticks()
 
 # fonts
 font = pygame.font.SysFont('Impact', 150)
-text_font = pygame.font.SysFont('Impact', 80)
+text_font = pygame.font.SysFont('Impact', 60)
+small_font = pygame.font.SysFont('Impact', 30)
 
 UI_REFRESH_RATE = clock.tick(60)/1000
-slider_input  = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((WIDTH + 70, 330),(200, 50)),
-                                                     start_value=10,value_range=(10,40),
+slider_input  = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((WIDTH + 50, 330),(200, 50)),
+                                                     start_value=15,value_range=(15,40),
                                                      manager=manager,
-                                                    object_id='#main_text_entry')
+                                                    object_id='-ROTATION_SLIDER-')
 
 while True:
     #surface.blit(bg, (WIDTH, 0))
@@ -98,8 +100,8 @@ while True:
         if event.type == pygame.QUIT:
             exit()
     if (event.type == pygame_gui.UI_HORIZONTAL_SLIDER_MOVED and
-                event.ui_object_id == '#main_text_entry'):
-                print( slider_input.current_value)
+                event.ui_object_id == '-ROTATION_SLIDER-'):
+                ROTATION_TIMER_SEC = int(slider_input.current_value)
             
     manager.process_events(event)
         
@@ -119,6 +121,7 @@ while True:
     if pressed_key[pygame.K_n]:
         maze = generate_maze()
         player_rect.center = TILE // 2, TILE // 2
+        game_starting_time = pygame.time.get_ticks()
     
     if pygame.time.get_ticks() - last_rotation > ROTATION_TIMER_SEC * 1000:
         game_angle = game_angle  +90
@@ -144,10 +147,15 @@ while True:
 
 
      # draw stats
-    surface.blit(text_font.render('TIME', True, pygame.Color('cyan'), True), (WIDTH + 70, 30))
-    surface.blit(font.render(f'{(pygame.time.get_ticks() - last_rotation)//1000}', True, pygame.Color('cyan')), (WIDTH + 70, 130))
-    manager.draw_ui(surface)
+    sec=(  pygame.time.get_ticks() - game_starting_time )/1000
+ 
 
+    surface.blit(text_font.render('Tiempo', True, pygame.Color('cyan'), True), (WIDTH + 30, 30))
+    #surface.blit(font.render(f'{(pygame.time.get_ticks() - last_rotation)//1000}', True, pygame.Color('cyan')), (WIDTH + 70, 130))
+    surface.blit(text_font.render(str(timedelta(seconds=sec)), True, pygame.Color('magenta')), (WIDTH + 50, 130))
+    surface.blit(text_font.render('Rotación (seg)', True, pygame.Color('cyan')), (WIDTH + 30, 230))
+    manager.draw_ui(surface)
+    surface.blit(small_font.render(str(ROTATION_TIMER_SEC), True, pygame.Color('magenta')), (WIDTH + 260, 340))
 
 
     pygame.display.flip()
