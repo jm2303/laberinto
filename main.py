@@ -17,7 +17,7 @@ def is_collide(x, y):
 FPS = 60
 pygame.init()
 game_surface = pygame.Surface(RES)
-surface = pygame.display.set_mode((WIDTH + 300, HEIGHT))
+surface = pygame.display.set_mode((WIDTH + 300, HEIGHT+10))
 clock = pygame.time.Clock()
 
 # images
@@ -133,8 +133,8 @@ while True:
     rotated_player = pygame.transform.rotate(player_img,player_angle)
     pygame.draw.rect(game_surface,'black',(0,0,TILE-8,TILE))
     game_surface.blit(rotated_player, player_rect)
-    game_surface.blit(cheese_image,(game_surface.get_width()-cheese_image.get_width() - 10,
-                                     game_surface.get_height()-cheese_image.get_height()- 10))
+    game_surface.blit(cheese_image,(game_surface.get_width()-cheese_image.get_width() - 3,
+                                     game_surface.get_height()-cheese_image.get_height()- 3))
     rotated_surface = pygame.transform.rotate(game_surface,game_angle)
     surface.blit(rotated_surface, (2, 2))
 
